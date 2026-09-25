@@ -1,0 +1,78 @@
+{
+  "name": "discord-music-desk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Windows Discord music player",
+  "author": "Music Desk",
+  "type": "module",
+  "main": "dist/main/index.cjs",
+  "scripts": {
+    "build": "node scripts/generate-icon.mjs && node scripts/build.mjs",
+    "start": "electron .",
+    "dev": "pnpm build && electron .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "biome check src tests",
+    "package:win": "pnpm build && electron-builder --win portable --config.directories.output=release/portable"
+  },
+  "dependencies": {
+    "@discordjs/voice": "0.19.2",
+    "@snazzah/davey-win32-x64-msvc": "0.1.12",
+    "discord.js": "14.27.0",
+    "lucide-react": "^0.577.0",
+    "opusscript": "0.1.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^22.19.15",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "electron": "44.4.2",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.27.3",
+    "playwright": "^1.58.2",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1",
+    "vitest": "^3.2.4"
+  },
+  "build": {
+    "appId": "local.musicdesk.desktop",
+    "productName": "Music Desk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "vendor",
+        "to": "tools",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "app-icon.ico"
+      }
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "build/icon.ico",
+      "signExecutable": false
+    },
+    "npmRebuild": false,
+    "artifactName": "Music-Desk-${version}-Portable.${ext}",
+    "compression": "store"
+  },
+  "packageManager": "pnpm@11.19.0"
+}

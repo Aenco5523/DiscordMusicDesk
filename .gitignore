@@ -1,0 +1,15 @@
+node_modules/
+dist/
+release/
+.codegraph/
+evidence/
+.tmp/
+.omo/
+build/
+vendor/*.exe
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+*.log
