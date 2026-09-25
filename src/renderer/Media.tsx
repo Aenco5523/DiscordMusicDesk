@@ -1,6 +1,7 @@
 import { Headphones, LoaderCircle, MonitorPlay } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Snapshot } from "../shared/contracts";
+import { translator } from "./i18n";
 import { seekTarget } from "./media-sync";
 
 export function Media({ snapshot }: { readonly snapshot: Snapshot }) {
@@ -9,6 +10,7 @@ export function Media({ snapshot }: { readonly snapshot: Snapshot }) {
   const lastSeek = useRef(-Infinity);
   const playPending = useRef(false);
   const [failure, setFailure] = useState(false);
+  const t = translator(snapshot.settings.language);
   const playback = snapshot.playback;
   const track = snapshot.queue.find((item) => item.id === playback.trackId);
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset player state whenever the media source changes.
@@ -53,7 +55,7 @@ export function Media({ snapshot }: { readonly snapshot: Snapshot }) {
   return (
     <section className="media-panel" aria-labelledby="now-title">
       <div className="section-eyebrow">
-        <span>지금 재생</span>
+        <span>{t("media.now")}</span>
         <span>
           <MonitorPlay size={14} />
           PC + Discord
@@ -66,7 +68,7 @@ export function Media({ snapshot }: { readonly snapshot: Snapshot }) {
             ref={video}
             src={playback.mediaUrl}
             playsInline
-            aria-label={track?.title ?? "현재 음악 동영상"}
+            aria-label={track?.title ?? t("media.video")}
             onError={() => setFailure(true)}
           />
         )}
@@ -81,47 +83,43 @@ export function Media({ snapshot }: { readonly snapshot: Snapshot }) {
             </div>
             <h1 id="now-title">
               {failure
-                ? "PC 미디어를 재생할 수 없어요"
+                ? t("media.failure")
                 : playback.status === "preparing"
-                  ? "미디어를 불러오는 중"
-                  : "재생할 음악을 추가하세요"}
+                  ? t("media.preparing")
+                  : t("media.empty")}
             </h1>
             <p>
               {failure
-                ? "다른 음악을 선택하거나 다시 재생해 주세요."
+                ? t("media.failureHelp")
                 : playback.status === "preparing"
-                  ? "재생 준비가 끝나면 자동으로 시작합니다."
-                  : "좋아하는 음악을 Discord에서 함께 들어보세요."}
+                  ? t("media.preparingHelp")
+                  : t("media.emptyHelp")}
             </p>
           </div>
         )}
       </div>
       <div className="now-details">
         <div>
-          <h2 title={track?.title}>{track?.title ?? "함께 듣는 음악, 한곳에서"}</h2>
-          <p>
-            {track
-              ? `추가한 사람 · ${track.addedBy}`
-              : "오른쪽 재생 목록에 음악 URL을 추가해 시작하세요."}
-          </p>
+          <h2 title={track?.title}>{track?.title ?? t("media.noTitle")}</h2>
+          <p>{track ? t("media.addedBy", { name: track.addedBy }) : t("media.addHint")}</p>
         </div>
         <span className="media-state">
           {playback.status === "playing"
-            ? "재생 중"
+            ? t("media.playing")
             : playback.status === "paused"
-              ? "일시 정지"
+              ? t("media.paused")
               : playback.status === "error"
-                ? "재생 오류"
-                : "대기 중"}
+                ? t("media.error")
+                : t("media.idle")}
         </span>
       </div>
       {!snapshot.hasToken && (
         <div className="setup-hint">
           <Headphones size={18} />
           <p>
-            <strong>처음 사용하시나요?</strong>
+            <strong>{t("media.firstUse")}</strong>
             <br />
-            설정에서 봇 토큰을 저장하고, 음성 채널 ID로 입장하세요.
+            {t("media.firstUseHelp")}
           </p>
         </div>
       )}

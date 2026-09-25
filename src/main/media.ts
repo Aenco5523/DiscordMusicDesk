@@ -22,12 +22,13 @@ export class MediaService {
   constructor(
     private readonly toolsDir: string,
     cacheDir: string,
+    private readonly ytDlpExecutable: () => string = () => join(toolsDir, "yt-dlp.exe"),
   ) {
     this.cacheDir = resolve(cacheDir);
   }
   async metadata(url: string): Promise<{ title: string; duration: number }> {
     const raw = await runMedia(
-      join(this.toolsDir, "yt-dlp.exe"),
+      this.ytDlpExecutable(),
       [...options, "--no-playlist", "--dump-single-json", "--skip-download", "--", youtubeUrl(url)],
       this.lifetime.signal,
       60000,
@@ -59,7 +60,7 @@ export class MediaService {
     if (source.kind !== "playlist")
       throw new AppError("URL", "YouTube 재생목록 URL을 입력해 주세요.");
     const raw = await runMedia(
-      join(this.toolsDir, "yt-dlp.exe"),
+      this.ytDlpExecutable(),
       [
         ...options,
         "--flat-playlist",
@@ -147,7 +148,7 @@ export class MediaService {
     this.active.add(track.id);
     try {
       await runMedia(
-        join(this.toolsDir, "yt-dlp.exe"),
+        this.ytDlpExecutable(),
         [
           ...options,
           "--no-playlist",

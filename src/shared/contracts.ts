@@ -72,9 +72,14 @@ export const commandSchema = z.discriminatedUnion("type", [
 ]);
 export type Command = z.infer<typeof commandSchema>;
 export type Reply = Readonly<{ ok: true } | { ok: false; error: string }>;
+export type ToolReply = Readonly<
+  { ok: true; version: string; updated: boolean } | { ok: false; error: string }
+>;
 export interface MusicBridge {
   readonly snapshot: () => Promise<Snapshot>;
   readonly command: (command: Command) => Promise<Reply>;
+  readonly ytDlpVersion: () => Promise<string>;
+  readonly updateYtDlp: () => Promise<ToolReply>;
   readonly subscribe: (listener: (snapshot: Snapshot) => void) => () => void;
 }
 export class AppError extends Error {

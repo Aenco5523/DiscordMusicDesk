@@ -2,6 +2,7 @@ import { Headphones, LogOut, Radio } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Snapshot } from "../shared/contracts";
 import type { Send } from "./bridge";
+import { translator } from "./i18n";
 import { Button, StatusBadge } from "./primitives";
 
 export function ConnectionHeader({
@@ -15,6 +16,7 @@ export function ConnectionHeader({
   readonly available: boolean;
   readonly settings: () => void;
 }) {
+  const t = translator(snapshot.settings.language);
   const [channel, setChannel] = useState("");
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState(false);
@@ -27,8 +29,8 @@ export function ConnectionHeader({
       <div className="connection-title">
         <Radio size={20} />
         <div>
-          <strong>{snapshot.connection.channelName ?? "Discord 연결"}</strong>
-          <StatusBadge connection={snapshot.connection} />
+          <strong>{snapshot.connection.channelName ?? t("connection.title")}</strong>
+          <StatusBadge connection={snapshot.connection} language={snapshot.settings.language} />
         </div>
       </div>
       <form
@@ -46,11 +48,11 @@ export function ConnectionHeader({
         }}
       >
         <div className="channel-field">
-          <label htmlFor="channel-id">음성 채널 ID</label>
+          <label htmlFor="channel-id">{t("connection.channel")}</label>
           <input
             id="channel-id"
             inputMode="numeric"
-            placeholder="17~20자리 채널 ID"
+            placeholder={t("connection.placeholder")}
             value={channel}
             onChange={(event) => setChannel(event.target.value)}
             aria-invalid={invalid}
@@ -59,14 +61,14 @@ export function ConnectionHeader({
           />
           {invalid && (
             <span id="channel-error" className="field-error">
-              17~20자리 숫자를 입력해 주세요.
+              {t("connection.invalid")}
             </span>
           )}
         </div>
         {joined ? (
           <Button onClick={() => void send({ type: "leave" })}>
             <LogOut size={16} />
-            나가기
+            {t("connection.leave")}
           </Button>
         ) : (
           <Button
@@ -75,12 +77,12 @@ export function ConnectionHeader({
             disabled={!available || pending || snapshot.busy || !snapshot.hasToken}
           >
             <Headphones size={16} />
-            {pending ? "입장 중" : "입장"}
+            {pending ? t("connection.joining") : t("connection.join")}
           </Button>
         )}
         {!snapshot.hasToken && (
           <Button className="text-button" onClick={settings}>
-            봇 설정
+            {t("connection.botSettings")}
           </Button>
         )}
       </form>

@@ -11,6 +11,7 @@ import {
 import { useRef, useState } from "react";
 import type { Snapshot } from "../shared/contracts";
 import type { Send } from "./bridge";
+import { translator } from "./i18n";
 import { IconButton, time } from "./primitives";
 
 function Volume({
@@ -19,13 +20,16 @@ function Volume({
   value,
   send,
   available,
+  language,
 }: {
   readonly label: string;
   readonly target: "pc" | "discord";
   readonly value: number;
   readonly send: Send;
   readonly available: boolean;
+  readonly language: Snapshot["settings"]["language"];
 }) {
+  const t = translator(language);
   const previous = useRef(75);
   return (
     <div className="volume-control">
@@ -36,7 +40,7 @@ function Volume({
       </div>
       <div className="volume-slider">
         <IconButton
-          label={`${label} ${value === 0 ? "음소거 해제" : "음소거"}`}
+          label={`${label} ${value === 0 ? t("transport.unmute") : t("transport.mute")}`}
           disabled={!available}
           onClick={() => {
             if (value > 0) previous.current = value;
@@ -70,6 +74,7 @@ export function Transport({
   readonly send: Send;
   readonly available: boolean;
 }) {
+  const t = translator(snapshot.settings.language);
   const [preview, setPreview] = useState<number | null>(null);
   const pendingSeek = useRef<number | null>(null);
   const playback = snapshot.playback;
@@ -86,18 +91,18 @@ export function Transport({
     setPreview(null);
   };
   return (
-    <section className="transport" aria-label="재생 제어">
+    <section className="transport" aria-label={t("transport.controls")}>
       <div className="transport-main">
         <div className="transport-buttons">
           <IconButton
-            label="이전 곡"
+            label={t("transport.previous")}
             disabled={!canPlay || index <= 0}
             onClick={() => void send({ type: "previous" })}
           >
             <SkipBack size={21} />
           </IconButton>
           <IconButton
-            label={playback.status === "playing" ? "일시 정지" : "재생"}
+            label={playback.status === "playing" ? t("transport.pause") : t("transport.play")}
             className="play-button"
             disabled={!canPlay}
             onClick={() => void send({ type: "toggle" })}
@@ -109,7 +114,7 @@ export function Transport({
             )}
           </IconButton>
           <IconButton
-            label="다음 곡"
+            label={t("transport.next")}
             disabled={!canPlay || index >= snapshot.queue.length - 1}
             onClick={() => void send({ type: "next" })}
           >
@@ -120,7 +125,7 @@ export function Transport({
           <span>{time(preview ?? playback.position)}</span>
           <input
             type="range"
-            aria-label="재생 위치"
+            aria-label={t("transport.seek")}
             min="0"
             max={playback.duration || 1}
             step="0.1"
@@ -143,18 +148,20 @@ export function Transport({
       </div>
       <div className="output-controls">
         <Volume
-          label="PC 음량"
+          label={t("transport.pcVolume")}
           target="pc"
           value={snapshot.settings.pcVolume}
           send={send}
           available={available}
+          language={snapshot.settings.language}
         />
         <Volume
-          label="Discord 음량"
+          label={t("transport.discordVolume")}
           target="discord"
           value={snapshot.settings.discordVolume}
           send={send}
           available={available}
+          language={snapshot.settings.language}
         />
       </div>
     </section>

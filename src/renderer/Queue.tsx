@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, ListMusic, Music2, Plus, Trash2 } from "lucide-reac
 import { useRef, useState } from "react";
 import type { Snapshot } from "../shared/contracts";
 import type { Send } from "./bridge";
+import { translator } from "./i18n";
 import { Button, IconButton, time } from "./primitives";
 
 export function Queue({
@@ -13,6 +14,7 @@ export function Queue({
   readonly send: Send;
   readonly available: boolean;
 }) {
+  const t = translator(snapshot.settings.language);
   const [url, setUrl] = useState("");
   const [pending, setPending] = useState(false);
   const list = useRef<HTMLOListElement>(null);
@@ -20,7 +22,7 @@ export function Queue({
   return (
     <section className="queue-panel" aria-labelledby="queue-title">
       <div className="queue-heading">
-        <h2 id="queue-title">재생 목록</h2>
+        <h2 id="queue-title">{t("queue.title")}</h2>
         <span className="count">{snapshot.queue.length}</span>
       </div>
       <form
@@ -33,28 +35,28 @@ export function Queue({
           setPending(false);
         }}
       >
-        <label htmlFor="media-url">음악 또는 재생목록 추가</label>
+        <label htmlFor="media-url">{t("queue.addLabel")}</label>
         <input
           ref={field}
           id="media-url"
           type="url"
           required
           maxLength={2048}
-          placeholder="YouTube 영상 또는 재생목록 URL"
+          placeholder={t("queue.placeholder")}
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           disabled={pending}
         />
         <Button type="submit" disabled={!available || pending || !url.trim()}>
           <Plus size={16} />
-          {pending ? "불러오는 중…" : "추가"}
+          {pending ? t("queue.loading") : t("queue.add")}
         </Button>
       </form>
       {snapshot.queue.length === 0 ? (
         <div className="queue-empty">
           <ListMusic size={32} strokeWidth={1.4} />
-          <strong>재생 목록이 비어 있어요</strong>
-          <p>URL을 추가하면 여기에 표시됩니다.</p>
+          <strong>{t("queue.empty")}</strong>
+          <p>{t("queue.emptyHelp")}</p>
         </div>
       ) : (
         <ol className="queue-list" ref={list}>
@@ -68,7 +70,7 @@ export function Queue({
                 className="track-select"
                 onClick={() => void send({ type: "select", id: track.id })}
                 disabled={snapshot.busy}
-                aria-label={`${track.title} 재생`}
+                aria-label={t("queue.play", { title: track.title })}
                 aria-current={track.id === snapshot.playback.trackId ? "true" : undefined}
               >
                 <span className="track-number">
@@ -82,12 +84,12 @@ export function Queue({
                   <strong title={track.title}>{track.title}</strong>
                   <span>
                     {track.status === "preparing"
-                      ? "미디어 준비 중"
+                      ? t("queue.preparing")
                       : track.status === "error"
-                        ? "재생 오류"
+                        ? t("queue.error")
                         : track.duration
                           ? time(track.duration)
-                          : "길이 확인 중"}{" "}
+                          : t("queue.durationPending")}{" "}
                     · {track.addedBy}
                   </span>
                 </span>
@@ -95,21 +97,21 @@ export function Queue({
               {track.error && <p className="field-error">{track.error}</p>}
               <div className="row-actions">
                 <IconButton
-                  label={`${track.title} 위로 이동`}
+                  label={t("queue.moveUp", { title: track.title })}
                   disabled={index === 0}
                   onClick={() => void send({ type: "move", id: track.id, direction: -1 })}
                 >
                   <ArrowUp size={15} />
                 </IconButton>
                 <IconButton
-                  label={`${track.title} 아래로 이동`}
+                  label={t("queue.moveDown", { title: track.title })}
                   disabled={index === snapshot.queue.length - 1}
                   onClick={() => void send({ type: "move", id: track.id, direction: 1 })}
                 >
                   <ArrowDown size={15} />
                 </IconButton>
                 <IconButton
-                  label={`${track.title} 삭제`}
+                  label={t("queue.remove", { title: track.title })}
                   onClick={async () => {
                     if (await send({ type: "remove", id: track.id })) {
                       requestAnimationFrame(() => {
@@ -129,7 +131,7 @@ export function Queue({
           ))}
         </ol>
       )}
-      <div className="queue-footnote">목록 순서대로 이어서 재생됩니다.</div>
+      <div className="queue-footnote">{t("queue.footnote")}</div>
     </section>
   );
 }

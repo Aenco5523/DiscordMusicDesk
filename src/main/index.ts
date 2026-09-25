@@ -1,13 +1,14 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, dialog, ipcMain, protocol, safeStorage, session } from "electron";
-import type { Reply, Snapshot } from "../shared/contracts";
+import type { Reply, Snapshot, ToolReply } from "../shared/contracts";
 import { AppError, commandSchema, userMessage } from "../shared/contracts";
 import { Controller } from "./controller";
 import { DiscordService } from "./discord";
 import { MediaService } from "./media";
 import { mediaResponse } from "./media-response";
 import { Storage } from "./storage";
+import { YtDlpManager } from "./yt-dlp";
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -38,7 +39,10 @@ if (!app.requestSingleInstanceLock()) {
       const toolsDir = app.isPackaged
         ? join(process.resourcesPath, "tools")
         : join(app.getAppPath(), "vendor");
-      const media = new MediaService(toolsDir, join(app.getPath("userData"), "media-cache"));
+      const ytDlp = new YtDlpManager(join(toolsDir, "yt-dlp.exe"), app.getPath("userData"));
+      const media = new MediaService(toolsDir, join(app.getPath("userData"), "media-cache"), () =>
+        ytDlp.executable(),
+      );
       const voice = new DiscordService({
         ffmpegPath: join(toolsDir, "ffmpeg.exe"),
         onConnection: (state) => controller?.connection(state),
@@ -81,6 +85,21 @@ if (!app.requestSingleInstanceLock()) {
           trusted(event);
           await controller?.command(commandSchema.parse(payload));
           return { ok: true };
+        } catch (error) {
+          return { ok: false, error: userMessage(error) };
+        }
+      });
+      ipcMain.handle("music:yt-dlp-version", (event) => {
+        trusted(event);
+        return ytDlp.version();
+      });
+      ipcMain.handle("music:yt-dlp-update", async (event): Promise<ToolReply> => {
+        try {
+          trusted(event);
+          const state = controller?.snapshot();
+          if (state?.busy || state?.playback.status === "preparing")
+            throw new AppError("YTDLP_BUSY", "미디어 준비가 끝난 뒤 업데이트해 주세요.");
+          return { ok: true, ...(await ytDlp.update()) };
         } catch (error) {
           return { ok: false, error: userMessage(error) };
         }

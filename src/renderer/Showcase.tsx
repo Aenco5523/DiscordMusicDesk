@@ -42,13 +42,24 @@ export function Showcase() {
       <section className="settings-card">
         <h2>연결 상태</h2>
         <div className="settings-actions">
-          <StatusBadge connection={emptySnapshot.connection} />
-          <StatusBadge connection={{ ...emptySnapshot.connection, status: "connecting" }} />
-          <StatusBadge connection={{ ...emptySnapshot.connection, status: "joined" }} />
-          <StatusBadge connection={{ ...emptySnapshot.connection, status: "error" }} />
+          <StatusBadge language="ko" connection={emptySnapshot.connection} />
+          <StatusBadge
+            language="ko"
+            connection={{ ...emptySnapshot.connection, status: "connecting" }}
+          />
+          <StatusBadge
+            language="ko"
+            connection={{ ...emptySnapshot.connection, status: "joined" }}
+          />
+          <StatusBadge
+            language="ko"
+            connection={{ ...emptySnapshot.connection, status: "error" }}
+          />
         </div>
       </section>
-      <Notice onClose={() => undefined}>입력값을 확인한 뒤 다시 시도해 주세요.</Notice>
+      <Notice language="ko" onClose={() => undefined}>
+        입력값을 확인한 뒤 다시 시도해 주세요.
+      </Notice>
     </main>
   );
 }

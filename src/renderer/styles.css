@@ -53,7 +53,8 @@ body {
   margin: 0;
 }
 button,
-input {
+input,
+select {
   font: inherit;
 }
 button {
@@ -74,6 +75,7 @@ input {
 }
 button,
 input,
+select,
 a {
   transition:
     background var(--motion-fast) ease-out,
@@ -101,7 +103,8 @@ p {
 svg {
   flex-shrink: 0;
 }
-input:not([type="range"]) {
+input:not([type="range"]),
+select {
   width: 100%;
   min-width: 0;
   height: var(--control-height);
@@ -640,7 +643,24 @@ input[type="range"] {
   padding: var(--space-8) var(--space-10);
 }
 .page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-8);
+}
+.page-heading > div:first-child {
+  min-width: 0;
+}
+.language-control {
+  display: grid;
+  gap: var(--space-1);
+  width: 180px;
+  flex: none;
+}
+.language-control label {
+  font-size: 12px;
+  font-weight: 600;
 }
 .page-heading .section-eyebrow {
   margin-bottom: var(--space-2);
@@ -705,6 +725,24 @@ input[type="range"] {
 }
 .settings-guide li {
   padding: var(--space-1) 0;
+}
+.updater-body {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}
+.updater-body > p:first-child {
+  flex-basis: 100%;
+}
+.updater-body > span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.updater-body > p[role="status"] {
+  flex-basis: 100%;
+  min-height: 18px;
 }
 .showcase {
   max-width: 960px;
@@ -867,6 +905,9 @@ input[type="range"] {
   .settings-page {
     padding: var(--space-5);
   }
+  .page-heading {
+    flex-wrap: wrap;
+  }
   .settings-card {
     padding: var(--space-5);
   }
@@ -953,5 +994,21 @@ input[type="range"] {
     cursor: pointer;
     color: var(--text-secondary);
     font-weight: 600;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 760px) {
+  .settings-page {
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+  }
+  .settings-page .settings-card {
+    padding: var(--space-3);
+  }
+  .settings-page .settings-section-heading {
+    margin-bottom: var(--space-2);
+  }
+  .settings-page .settings-actions {
+    margin-top: var(--space-2);
   }
 }

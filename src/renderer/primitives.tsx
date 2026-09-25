@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle2, Circle, LoaderCircle, X } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import type { Connection } from "../shared/contracts";
+import type { Connection, Locale } from "../shared/contracts";
+import { type TranslationKey, translator } from "./i18n";
 
 export function Button({
   children,
@@ -32,15 +33,22 @@ export function IconButton({
     </Button>
   );
 }
-const statuses: Record<Connection["status"], string> = {
-  offline: "연결 안 됨",
-  connecting: "연결 중",
-  online: "봇 연결됨",
-  joining: "채널 입장 중",
-  joined: "음성 채널 연결됨",
-  error: "연결 오류",
+const statuses: Record<Connection["status"], TranslationKey> = {
+  offline: "status.offline",
+  connecting: "status.connecting",
+  online: "status.online",
+  joining: "status.joining",
+  joined: "status.joined",
+  error: "status.error",
 };
-export function StatusBadge({ connection }: { readonly connection: Connection }) {
+export function StatusBadge({
+  connection,
+  language,
+}: {
+  readonly connection: Connection;
+  readonly language: Locale;
+}) {
+  const t = translator(language);
   const active = connection.status === "online" || connection.status === "joined";
   const pending = connection.status === "connecting" || connection.status === "joining";
   const Icon = pending
@@ -53,22 +61,25 @@ export function StatusBadge({ connection }: { readonly connection: Connection })
   return (
     <span className={`status ${active ? "success" : ""}`} role="status">
       <Icon size={14} className={pending ? "spinning" : ""} />
-      {statuses[connection.status]}
+      {t(statuses[connection.status])}
     </span>
   );
 }
 export function Notice({
   children,
   onClose,
+  language,
 }: {
   readonly children: ReactNode;
   readonly onClose: () => void;
+  readonly language: Locale;
 }) {
+  const t = translator(language);
   return (
     <div className="notice" role="alert">
       <AlertCircle size={18} />
       <span>{children}</span>
-      <IconButton label="알림 닫기" onClick={onClose}>
+      <IconButton label={t("notice.close")} onClick={onClose}>
         <X size={16} />
       </IconButton>
     </div>

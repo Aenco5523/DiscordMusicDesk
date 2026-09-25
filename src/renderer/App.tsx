@@ -1,7 +1,8 @@
 import { Headphones, Music2, Settings2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMusic } from "./bridge";
 import { ConnectionHeader } from "./ConnectionHeader";
+import { translator } from "./i18n";
 import { Media } from "./Media";
 import { Button, Notice } from "./primitives";
 import { Queue } from "./Queue";
@@ -12,6 +13,10 @@ import { Transport } from "./Transport";
 export function App() {
   const [page, setPage] = useState<"player" | "settings">("player");
   const { snapshot, send, available, error, clearError } = useMusic();
+  const t = translator(snapshot.settings.language);
+  useEffect(() => {
+    document.documentElement.lang = snapshot.settings.language;
+  }, [snapshot.settings.language]);
   if (new URLSearchParams(window.location.search).has("showcase")) return <Showcase />;
   const notice = error ?? snapshot.connection.error ?? snapshot.notice;
   return (
@@ -20,14 +25,14 @@ export function App() {
         <div className="brand" title="Music Desk">
           <Headphones size={26} />
         </div>
-        <nav aria-label="주 메뉴">
+        <nav aria-label={t("nav.main")}>
           <Button
             className={`nav-item ${page === "player" ? "active" : ""}`}
             aria-current={page === "player" ? "page" : undefined}
             onClick={() => setPage("player")}
           >
             <Music2 size={22} />
-            <span>플레이어</span>
+            <span>{t("nav.player")}</span>
           </Button>
           <Button
             className={`nav-item ${page === "settings" ? "active" : ""}`}
@@ -35,7 +40,7 @@ export function App() {
             onClick={() => setPage("settings")}
           >
             <Settings2 size={22} />
-            <span>설정</span>
+            <span>{t("nav.settings")}</span>
           </Button>
         </nav>
         <span className="sidebar-foot">
@@ -54,11 +59,12 @@ export function App() {
         <div className="workspace-content">
           {!available && (
             <div className="preview-banner" role="status">
-              데스크톱 앱에서 연결할 수 있어요. 현재는 화면 미리보기입니다.
+              {t("preview.banner")}
             </div>
           )}
           {notice && (
             <Notice
+              language={snapshot.settings.language}
               onClose={() => {
                 clearError();
                 void send({ type: "dismiss" });
