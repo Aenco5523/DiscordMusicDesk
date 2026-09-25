@@ -23,8 +23,9 @@ export function runMedia(
       if (stopped) return;
       stopped = error;
       if (process.platform === "win32" && child.pid) {
+        const { SystemRoot } = process.env;
         const killer = spawn(
-          join(process.env["SystemRoot"] ?? "C:\\Windows", "System32", "taskkill.exe"),
+          join(SystemRoot ?? "C:\\Windows", "System32", "taskkill.exe"),
           ["/PID", String(child.pid), "/T", "/F"],
           { shell: false, windowsHide: true, stdio: "ignore" },
         );

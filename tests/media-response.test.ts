@@ -1,7 +1,68 @@
-import {mkdtemp,writeFile,rm} from 'node:fs/promises';import {join} from 'node:path';import {tmpdir} from 'node:os';import {expect,it} from 'vitest';import {mediaResponse} from '../src/main/media-response';
-async function fixture(run:(path:string)=>Promise<void>){const d=await mkdtemp(join(tmpdir(),'music-range-'));try{const p=join(d,'v.mp4');await writeFile(p,Buffer.from(Array.from({length:256},(_,i)=>i)));await run(p);}finally{await rm(d,{recursive:true,force:true});}}
-it('returns complete length and accepts byte ranges',()=>fixture(async p=>{const r=await mediaResponse(p,new Request('https://media/'));expect(r.status).toBe(200);expect(r.headers.get('content-length')).toBe('256');expect(r.headers.get('accept-ranges')).toBe('bytes');expect((await r.arrayBuffer()).byteLength).toBe(256);}));
-it('returns 206 and exact content range for seek',()=>fixture(async p=>{const r=await mediaResponse(p,new Request('https://media/',{headers:{Range:'bytes=100-199'}}));expect(r.status).toBe(206);expect(r.headers.get('content-range')).toBe('bytes 100-199/256');expect(r.headers.get('content-length')).toBe('100');expect([...new Uint8Array(await r.arrayBuffer())]).toEqual(Array.from({length:100},(_,i)=>i+100));}));
-it('supports suffix and open ended requests',()=>fixture(async p=>{const r=await mediaResponse(p,new Request('https://media/',{headers:{Range:'bytes=-8'}}));expect(r.headers.get('content-range')).toBe('bytes 248-255/256');await r.arrayBuffer();const e=await mediaResponse(p,new Request('https://media/',{headers:{Range:'bytes=250-'}}));expect((await e.arrayBuffer()).byteLength).toBe(6);}));
-it('rejects out of bounds or multiple ranges',()=>fixture(async p=>{for(const range of ['bytes=256-','bytes=99-50','bytes=0-1,4-5']){const r=await mediaResponse(p,new Request('https://media/',{headers:{Range:range}}));expect(r.status).toBe(416);expect(r.headers.get('content-range')).toBe('bytes */256');}}));
-it('HEAD does not stream a body',()=>fixture(async p=>{const r=await mediaResponse(p,new Request('https://media/',{method:'HEAD'}));expect(r.headers.get('content-length')).toBe('256');expect((await r.arrayBuffer()).byteLength).toBe(0);}));
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { expect, it } from "vitest";
+import { mediaResponse } from "../src/main/media-response";
+
+async function fixture(run: (path: string) => Promise<void>) {
+  const d = await mkdtemp(join(tmpdir(), "music-range-"));
+  try {
+    const p = join(d, "v.mp4");
+    await writeFile(p, Buffer.from(Array.from({ length: 256 }, (_, i) => i)));
+    await run(p);
+  } finally {
+    await rm(d, { recursive: true, force: true });
+  }
+}
+it("returns complete length and accepts byte ranges", () =>
+  fixture(async (p) => {
+    const r = await mediaResponse(p, new Request("https://media/"));
+    expect(r.status).toBe(200);
+    expect(r.headers.get("content-length")).toBe("256");
+    expect(r.headers.get("accept-ranges")).toBe("bytes");
+    expect((await r.arrayBuffer()).byteLength).toBe(256);
+  }));
+it("returns 206 and exact content range for seek", () =>
+  fixture(async (p) => {
+    const r = await mediaResponse(
+      p,
+      new Request("https://media/", { headers: { Range: "bytes=100-199" } }),
+    );
+    expect(r.status).toBe(206);
+    expect(r.headers.get("content-range")).toBe("bytes 100-199/256");
+    expect(r.headers.get("content-length")).toBe("100");
+    expect([...new Uint8Array(await r.arrayBuffer())]).toEqual(
+      Array.from({ length: 100 }, (_, i) => i + 100),
+    );
+  }));
+it("supports suffix and open ended requests", () =>
+  fixture(async (p) => {
+    const r = await mediaResponse(
+      p,
+      new Request("https://media/", { headers: { Range: "bytes=-8" } }),
+    );
+    expect(r.headers.get("content-range")).toBe("bytes 248-255/256");
+    await r.arrayBuffer();
+    const e = await mediaResponse(
+      p,
+      new Request("https://media/", { headers: { Range: "bytes=250-" } }),
+    );
+    expect((await e.arrayBuffer()).byteLength).toBe(6);
+  }));
+it("rejects out of bounds or multiple ranges", () =>
+  fixture(async (p) => {
+    for (const range of ["bytes=256-", "bytes=99-50", "bytes=0-1,4-5"]) {
+      const r = await mediaResponse(
+        p,
+        new Request("https://media/", { headers: { Range: range } }),
+      );
+      expect(r.status).toBe(416);
+      expect(r.headers.get("content-range")).toBe("bytes */256");
+    }
+  }));
+it("HEAD does not stream a body", () =>
+  fixture(async (p) => {
+    const r = await mediaResponse(p, new Request("https://media/", { method: "HEAD" }));
+    expect(r.headers.get("content-length")).toBe("256");
+    expect((await r.arrayBuffer()).byteLength).toBe(0);
+  }));

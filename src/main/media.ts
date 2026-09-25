@@ -7,12 +7,7 @@ import { normalizeMedia } from "./media-normalize";
 import { runMedia } from "./media-process";
 
 const LIMIT = 1024 * 1024 * 1024;
-const options = [
-  "--ignore-config",
-  "--socket-timeout",
-  "15",
-  "--no-warnings",
-] as const;
+const options = ["--ignore-config", "--socket-timeout", "15", "--no-warnings"] as const;
 const infoSchema = z.object({
   title: z.string().min(1).max(1000),
   duration: z.number().finite().positive().max(7200),
@@ -57,24 +52,64 @@ export class MediaService {
       );
     return { title: parsed.data.title, duration: parsed.data.duration };
   }
-  async playlist(url: string): Promise<readonly {url: string; title: string; duration: number}[]> {
-    const source=youtubeInput(url);
-    if(source.kind!=='playlist')throw new AppError('URL','YouTube 재생목록 URL을 입력해 주세요.');
-    const raw=await runMedia(join(this.toolsDir,"yt-dlp.exe"),[...options,"--flat-playlist","--playlist-end","201","--dump-single-json","--skip-download","--",source.url],this.lifetime.signal,120000);
-    let value:unknown;
-    try{value=JSON.parse(raw);}catch{throw new AppError('MEDIA_METADATA','재생목록 정보를 읽지 못했습니다.');}
-    const list=z.object({entries:z.array(z.unknown())}).safeParse(value);
-    if(!list.success)throw new AppError('MEDIA_METADATA','재생목록 정보를 읽지 못했습니다.');
-    if(list.data.entries.length>200)throw new AppError('QUEUE_FULL','한 번에 최대 200곡까지 추가할 수 있습니다.');
-    const entry=z.object({id:z.string().regex(/^[A-Za-z0-9_-]{11}$/),title:z.string().min(1).max(1000),duration:z.number().finite().nullable().optional(),is_live:z.boolean().optional(),live_status:z.string().nullable().optional()});
-    const tracks=list.data.entries.flatMap(item=>{
-      const parsed=entry.safeParse(item);
-      if(!parsed.success||parsed.data.is_live||['is_live','is_upcoming','post_live'].includes(parsed.data.live_status??''))return [];
-      const duration=parsed.data.duration??0;
-      if(duration<0||duration>7200)return [];
-      return [{url:`https://www.youtube.com/watch?v=${parsed.data.id}`,title:parsed.data.title,duration}];
+  async playlist(
+    url: string,
+  ): Promise<readonly { url: string; title: string; duration: number }[]> {
+    const source = youtubeInput(url);
+    if (source.kind !== "playlist")
+      throw new AppError("URL", "YouTube 재생목록 URL을 입력해 주세요.");
+    const raw = await runMedia(
+      join(this.toolsDir, "yt-dlp.exe"),
+      [
+        ...options,
+        "--flat-playlist",
+        "--playlist-end",
+        "201",
+        "--dump-single-json",
+        "--skip-download",
+        "--",
+        source.url,
+      ],
+      this.lifetime.signal,
+      120000,
+    );
+    let value: unknown;
+    try {
+      value = JSON.parse(raw);
+    } catch {
+      throw new AppError("MEDIA_METADATA", "재생목록 정보를 읽지 못했습니다.");
+    }
+    const list = z.object({ entries: z.array(z.unknown()) }).safeParse(value);
+    if (!list.success) throw new AppError("MEDIA_METADATA", "재생목록 정보를 읽지 못했습니다.");
+    if (list.data.entries.length > 200)
+      throw new AppError("QUEUE_FULL", "한 번에 최대 200곡까지 추가할 수 있습니다.");
+    const entry = z.object({
+      id: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
+      title: z.string().min(1).max(1000),
+      duration: z.number().finite().nullable().optional(),
+      is_live: z.boolean().optional(),
+      live_status: z.string().nullable().optional(),
     });
-    if(tracks.length===0)throw new AppError('MEDIA_UNSUPPORTED','재생할 수 있는 영상이 재생목록에 없습니다.');
+    const tracks = list.data.entries.flatMap((item) => {
+      const parsed = entry.safeParse(item);
+      if (
+        !parsed.success ||
+        parsed.data.is_live ||
+        ["is_live", "is_upcoming", "post_live"].includes(parsed.data.live_status ?? "")
+      )
+        return [];
+      const duration = parsed.data.duration ?? 0;
+      if (duration < 0 || duration > 7200) return [];
+      return [
+        {
+          url: `https://www.youtube.com/watch?v=${parsed.data.id}`,
+          title: parsed.data.title,
+          duration,
+        },
+      ];
+    });
+    if (tracks.length === 0)
+      throw new AppError("MEDIA_UNSUPPORTED", "재생할 수 있는 영상이 재생목록에 없습니다.");
     return tracks;
   }
   async prepare(track: Track, signal: AbortSignal): Promise<string> {

@@ -50,9 +50,21 @@ function output(value: unknown) {
 }
 describe("MediaService", () => {
   it("reads flat playlist entries and skips long or live videos", async () => {
-    output({entries:[{id:"jNQXAC9IVRw",title:"First",duration:19},{id:"BLIWFBjqrQI",title:"Unknown",duration:null},{id:"R8un7H0VXPQ",title:"Long",duration:7201},{id:"2QufxeW8zaU",title:"Live",duration:100,is_live:true}]});
-    const entries=await service.playlist("https://www.youtube.com/playlist?list=PL-zl0Qa3WDZ-XYzFHodllO2vHmE7kGODR");
-    expect(entries).toEqual([{url:"https://www.youtube.com/watch?v=jNQXAC9IVRw",title:"First",duration:19},{url:"https://www.youtube.com/watch?v=BLIWFBjqrQI",title:"Unknown",duration:0}]);
+    output({
+      entries: [
+        { id: "jNQXAC9IVRw", title: "First", duration: 19 },
+        { id: "BLIWFBjqrQI", title: "Unknown", duration: null },
+        { id: "R8un7H0VXPQ", title: "Long", duration: 7201 },
+        { id: "2QufxeW8zaU", title: "Live", duration: 100, is_live: true },
+      ],
+    });
+    const entries = await service.playlist(
+      "https://www.youtube.com/playlist?list=PL-zl0Qa3WDZ-XYzFHodllO2vHmE7kGODR",
+    );
+    expect(entries).toEqual([
+      { url: "https://www.youtube.com/watch?v=jNQXAC9IVRw", title: "First", duration: 19 },
+      { url: "https://www.youtube.com/watch?v=BLIWFBjqrQI", title: "Unknown", duration: 0 },
+    ]);
     expect(fake.spawn.mock.calls[0]?.[1]).toContain("--flat-playlist");
   });
   it("returns metadata when a finite non-live video is supplied", async () => {
