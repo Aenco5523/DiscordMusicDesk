@@ -205,6 +205,10 @@ export class Controller {
       case "leave":
         this.options.voice.leave();
         break;
+      case "language":
+        this.settings = { ...this.settings, language: command.language };
+        this.persist();
+        break;
       case "dismiss":
         this.notice = null;
         break;

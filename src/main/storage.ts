@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
-import type { Settings, Track } from "../shared/contracts";
+import type { Locale, Settings, Track } from "../shared/contracts";
 import { AppError, settingsSchema, trackSchema } from "../shared/contracts";
 export interface CryptoPort {
   isEncryptionAvailable(): boolean;
@@ -23,6 +23,7 @@ export class Storage {
   constructor(
     private readonly directory: string,
     private readonly crypto: CryptoPort,
+    private readonly initialLocale: Locale = "ko",
   ) {
     mkdirSync(directory, { recursive: true });
     this.statePath = join(directory, "state.json");
@@ -30,7 +31,7 @@ export class Storage {
   }
   load(): { settings: Settings; queue: readonly Track[]; notice: string | null } {
     const fallback = {
-      settings: { pcVolume: 50, discordVolume: 70, channelId: "" },
+      settings: { pcVolume: 50, discordVolume: 70, channelId: "", language: this.initialLocale },
       queue: [],
       notice: null,
     };

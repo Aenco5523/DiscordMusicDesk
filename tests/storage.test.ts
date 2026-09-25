@@ -39,7 +39,7 @@ it("refuses plaintext fallback when crypto unavailable", () => {
 it("restores queue identities and volumes", () => {
   const p = fresh();
   const s = new Storage(p, crypto);
-  s.save({ pcVolume: 31, discordVolume: 82, channelId: "123" }, [
+  s.save({ pcVolume: 31, discordVolume: 82, channelId: "123", language: "ko" }, [
     {
       id: "550e8400-e29b-41d4-a716-446655440000",
       url: "https://youtu.be/jNQXAC9IVRw",
@@ -61,4 +61,15 @@ it("preserves corrupt original and reports it", () => {
   const s = new Storage(p, crypto);
   expect(s.load().notice).toBeTruthy();
   expect(readFileSync(join(p, "state.json"), "utf8")).toBe("{invalid");
+});
+it("loads existing settings without a language field", () => {
+  const p = fresh();
+  writeFileSync(
+    join(p, "state.json"),
+    JSON.stringify({ settings: { pcVolume: 31, discordVolume: 82, channelId: "123" }, queue: [] }),
+  );
+  const saved = new Storage(p, crypto).load();
+  expect(saved.settings.language).toBe("ko");
+  expect(saved.settings.pcVolume).toBe(31);
+  expect(saved.notice).toBeNull();
 });

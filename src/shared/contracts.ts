@@ -10,10 +10,13 @@ export const trackSchema = z.object({
   error: z.string().nullable(),
 });
 export type Track = Readonly<z.infer<typeof trackSchema>>;
+export const localeSchema = z.enum(["ko", "zh-CN", "ja", "en"]);
+export type Locale = z.infer<typeof localeSchema>;
 export const settingsSchema = z.object({
   pcVolume: z.number().min(0).max(100),
   discordVolume: z.number().min(0).max(100),
   channelId: z.string(),
+  language: localeSchema.default("ko"),
 });
 export type Settings = Readonly<z.infer<typeof settingsSchema>>;
 export type Connection = Readonly<{
@@ -64,6 +67,7 @@ export const commandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("connect") }),
   z.object({ type: z.literal("join"), channelId: z.string().regex(/^\d{17,20}$/) }),
   z.object({ type: z.literal("leave") }),
+  z.object({ type: z.literal("language"), language: localeSchema }),
   z.object({ type: z.literal("dismiss") }),
 ]);
 export type Command = z.infer<typeof commandSchema>;

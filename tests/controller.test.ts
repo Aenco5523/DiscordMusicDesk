@@ -40,7 +40,7 @@ function setup() {
   };
   const c = new Controller({ storage, media, voice, publish: () => {} });
   controllers.push(c);
-  return { c, media };
+  return { c, media, storage };
 }
 it("adds real metadata without autoplay", async () => {
   const { c } = setup();
@@ -121,4 +121,11 @@ it("rejects permission revoked during metadata resolution", async () => {
   };
   await expect(c.add("https://youtu.be/jNQXAC9IVRw", "member", () => permitted)).rejects.toThrow();
   expect(c.snapshot().queue).toHaveLength(0);
+});
+it("persists a selected language", async () => {
+  const { c, storage } = setup();
+  await c.command({ type: "language", language: "ja" });
+  expect(c.snapshot().settings.language).toBe("ja");
+  expect(storage.load().settings.language).toBe("ja");
+  expect(c.snapshot().settings.pcVolume).toBe(50);
 });

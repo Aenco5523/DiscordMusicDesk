@@ -12,7 +12,7 @@ export const emptySnapshot: Snapshot = {
   hasToken: false,
   busy: false,
   notice: null,
-  settings: { pcVolume: 75, discordVolume: 75, channelId: "" },
+  settings: { pcVolume: 75, discordVolume: 75, channelId: "", language: "ko" },
   connection: { status: "offline", botName: null, channelId: null, channelName: null, error: null },
   playback: {
     trackId: null,
