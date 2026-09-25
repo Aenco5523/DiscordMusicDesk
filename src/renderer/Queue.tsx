@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import type { Snapshot } from "../shared/contracts";
 import type { Send } from "./bridge";
 import { translator } from "./i18n";
+import { localizeRuntime } from "./i18n/runtime";
 import { Button, IconButton, time } from "./primitives";
 
 export function Queue({
@@ -94,7 +95,11 @@ export function Queue({
                   </span>
                 </span>
               </button>
-              {track.error && <p className="field-error">{track.error}</p>}
+              {track.error && (
+                <p className="field-error">
+                  {localizeRuntime(snapshot.settings.language, track.error)}
+                </p>
+              )}
               <div className="row-actions">
                 <IconButton
                   label={t("queue.moveUp", { title: track.title })}

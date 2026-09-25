@@ -12,10 +12,10 @@ import {
   GatewayIntentBits,
   MessageFlags,
   PermissionFlagsBits,
-  SlashCommandBuilder,
 } from "discord.js";
 import { AppError, type Connection } from "../shared/contracts";
 import { mayAddFromVoice, youtubeInput } from "../shared/validation";
+import { addVideoCommand, discordError, discordReply } from "./discord-locale";
 import { VoiceAudio } from "./voice";
 
 type Options = Readonly<{
@@ -124,13 +124,7 @@ export class DiscordService {
         return;
       voice.subscribe(this.audio.player);
       this.publish({ status: "joined", channelId: channel.id, channelName: channel.name });
-      const command = new SlashCommandBuilder()
-        .setName("영상추가")
-        .setDescription("현재 음성 채널의 재생 대기열에 YouTube 영상 또는 재생목록을 추가합니다.")
-        .addStringOption((option) =>
-          option.setName("url").setDescription("YouTube 영상 또는 재생목록 주소").setRequired(true),
-        );
-      await channel.guild.commands.create(command);
+      await channel.guild.commands.create(addVideoCommand());
     } catch (error) {
       if (generation !== this.generation || joinGeneration !== this.joinGeneration) return;
       this.leave();
@@ -206,12 +200,12 @@ export class DiscordService {
     try {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       if (!(await this.allowed(interaction))) {
-        await interaction.editReply("봇과 같은 음성 채널에 참가한 뒤 사용해 주세요.");
+        await interaction.editReply(discordReply(interaction.locale, "voiceRequired"));
         return;
       }
       const url = youtubeInput(interaction.options.getString("url", true)).url;
       if (!(await this.allowed(interaction))) {
-        await interaction.editReply("음성 채널이 변경되었습니다. 다시 시도해 주세요.");
+        await interaction.editReply(discordReply(interaction.locale, "channelChanged"));
         return;
       }
       const generation = this.generation;
@@ -225,14 +219,11 @@ export class DiscordService {
       const stillAllowed = await this.allowed(interaction);
       await interaction.editReply(
         stillAllowed
-          ? "재생 대기열에 추가했습니다."
-          : "재생 대기열에 추가했습니다. 현재 음성 채널이 변경되었습니다.",
+          ? discordReply(interaction.locale, "added")
+          : discordReply(interaction.locale, "addedChanged"),
       );
     } catch (error) {
-      const message =
-        error instanceof AppError
-          ? error.message
-          : "영상을 추가하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      const message = discordError(interaction.locale, error);
       try {
         if (interaction.deferred || interaction.replied) await interaction.editReply(message);
         else await interaction.reply({ content: message, flags: MessageFlags.Ephemeral });

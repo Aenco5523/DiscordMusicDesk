@@ -75,7 +75,7 @@ export const ja: Record<keyof typeof ko, string> = {
   "settings.deleteToken": "保存済みトークンを削除",
   "settings.tokenSaved": "トークン保存済み",
   "settings.connectionTitle": "Bot接続",
-  "settings.connectionHelp": "保存したトークンでDiscordにログインします。",
+  "settings.connectionHelp": "保存したトークンで接続します。",
   "settings.connecting": "接続中…",
   "settings.connect": "Discordに接続",
   "settings.normalize":

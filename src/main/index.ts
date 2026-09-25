@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, dialog, ipcMain, protocol, safeStorage, session } from "electron";
 import type { Reply, Snapshot, ToolReply } from "../shared/contracts";
 import { AppError, commandSchema, userMessage } from "../shared/contracts";
+import { localeFromInstaller, localeFromSystem } from "../shared/locale";
 import { Controller } from "./controller";
 import { DiscordService } from "./discord";
 import { MediaService } from "./media";
@@ -35,7 +36,11 @@ if (!app.requestSingleInstanceLock()) {
   app
     .whenReady()
     .then(async () => {
-      const storage = new Storage(app.getPath("userData"), safeStorage);
+      const installerArg = process.argv.find((value) => value.startsWith("--initial-lang="));
+      const initialLocale =
+        localeFromInstaller(installerArg?.slice("--initial-lang=".length)) ??
+        localeFromSystem(app.getLocale());
+      const storage = new Storage(app.getPath("userData"), safeStorage, initialLocale);
       const toolsDir = app.isPackaged
         ? join(process.resourcesPath, "tools")
         : join(app.getAppPath(), "vendor");

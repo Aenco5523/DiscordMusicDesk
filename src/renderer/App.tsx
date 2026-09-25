@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMusic } from "./bridge";
 import { ConnectionHeader } from "./ConnectionHeader";
 import { translator } from "./i18n";
+import { localizeRuntime } from "./i18n/runtime";
 import { Media } from "./Media";
 import { Button, Notice } from "./primitives";
 import { Queue } from "./Queue";
@@ -18,7 +19,8 @@ export function App() {
     document.documentElement.lang = snapshot.settings.language;
   }, [snapshot.settings.language]);
   if (new URLSearchParams(window.location.search).has("showcase")) return <Showcase />;
-  const notice = error ?? snapshot.connection.error ?? snapshot.notice;
+  const rawNotice = error ?? snapshot.connection.error ?? snapshot.notice;
+  const notice = rawNotice ? localizeRuntime(snapshot.settings.language, rawNotice) : null;
   return (
     <div className="app-shell">
       <aside className="sidebar">

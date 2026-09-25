@@ -73,7 +73,7 @@ export const ko = {
   "settings.deleteToken": "저장된 토큰 삭제",
   "settings.tokenSaved": "토큰 저장됨",
   "settings.connectionTitle": "봇 연결",
-  "settings.connectionHelp": "저장한 토큰으로 Discord에 로그인합니다.",
+  "settings.connectionHelp": "저장한 토큰으로 연결합니다.",
   "settings.connecting": "연결 중…",
   "settings.connect": "Discord 연결",
   "settings.normalize":
