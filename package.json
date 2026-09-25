@@ -1,9 +1,9 @@
 {
   "name": "discord-music-desk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Windows Discord music player",
-  "author": "Music Desk",
+  "description": "Multilingual Windows Discord music player",
+  "author": "Aenco5523",
   "type": "module",
   "main": "dist/main/index.cjs",
   "scripts": {
@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "biome check src tests",
-    "package:win": "pnpm build && electron-builder --win portable --config.directories.output=release/portable"
+    "package:win": "pnpm build && electron-builder --win portable --config.directories.output=release/portable",
+    "package:installer": "pnpm build && electron-builder --win dir --config.directories.output=release/installer && node scripts/package-installer.mjs"
   },
   "dependencies": {
     "@discordjs/voice": "0.19.2",
@@ -60,6 +61,10 @@
       {
         "from": "build/icon.ico",
         "to": "app-icon.ico"
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.txt"
       }
     ],
     "asarUnpack": [
@@ -74,5 +79,6 @@
     "artifactName": "Music-Desk-${version}-Portable.${ext}",
     "compression": "store"
   },
-  "packageManager": "pnpm@11.19.0"
+  "packageManager": "pnpm@11.19.0",
+  "license": "MIT"
 }
